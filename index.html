@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ila ukhti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #12060d;
+    --plum: #2a0f1d;
+    --rose: #ff9eb5;
+    --ember: #c2185b;
+    --paper: #f6e9d2;
+    --ink: #3a1620;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --hand: "Caveat", "Segoe Print", "Comic Sans MS", cursive;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: radial-gradient(ellipse at 50% 40%, var(--plum), var(--night) 70%);
+    color: #fff;
+    font-family: var(--serif);
+    overflow: hidden;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
+
+  .title {
+    position: fixed; top: 6vh; left: 0; right: 0; text-align: center;
+    font-size: clamp(1.4rem, 5.5vw, 2.2rem); font-weight: 600; color: var(--rose);
+    padding: 0 1rem; margin: 0;
+  }
+  .caption {
+    position: fixed; bottom: 9vh; left: 0; right: 0; text-align: center;
+    font-style: italic; font-size: clamp(1.1rem, 4.5vw, 1.6rem);
+    padding: 0 1.25rem; min-height: 2.2em; margin: 0;
+    transition: opacity .6s ease; opacity: 0;
+  }
+  .caption.show { opacity: 1; }
+
+  .btn {
+    font-family: var(--serif); font-size: 1.15rem; color: #fff;
+    background: var(--ember); border: 0; border-radius: 999px;
+    padding: .8rem 2rem; cursor: pointer;
+  }
+  .btn:focus-visible { outline: 3px solid var(--rose); outline-offset: 3px; }
+  .btn.ghost { background: transparent; border: 1.5px solid var(--rose); color: var(--rose); }
+
+  .start {
+    position: fixed; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 1.5rem; text-align: center;
+    background: var(--night); padding: 2rem; z-index: 5;
+    transition: opacity .6s ease;
+  }
+  .start h1 { font-size: clamp(1.6rem, 7vw, 2.6rem); margin: 0; font-weight: 600; color: var(--rose); }
+  .start p { margin: 0; font-style: italic; opacity: .85; font-size: 1.1rem; }
+  .start.gone { opacity: 0; pointer-events: none; }
+
+  .replay { position: fixed; bottom: 4vh; left: 50%; transform: translateX(-50%); display: none; z-index: 3; }
+  .replay.show { display: block; }
+
+  .veil {
+    position: fixed; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center;
+    background: rgba(10, 3, 7, .72); padding: 1rem;
+    opacity: 0; pointer-events: none; transition: opacity .5s ease;
+  }
+  .veil.open { opacity: 1; pointer-events: auto; }
+  .paper {
+    width: min(92vw, 560px); max-height: 86vh; overflow-y: auto;
+    background: var(--paper); color: var(--ink);
+    border-radius: 6px; padding: 1.6rem 1.5rem 1.4rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6);
+    transform: translateY(40px) scale(.7); transition: transform .7s cubic-bezier(.2,1.2,.3,1);
+  }
+  .veil.open .paper { transform: none; }
+  .paper h2 { font-family: var(--hand); font-size: 2rem; margin: 0 0 .6rem; color: #8b1a2f; font-weight: 700; }
+  .paper p {
+    font-family: var(--hand); font-size: clamp(1.3rem, 5vw, 1.6rem); line-height: 1.35; margin: 0 0 .45rem;
+    opacity: 0; transform: translateY(6px); transition: opacity .8s ease, transform .8s ease;
+  }
+  .paper p.on { opacity: 1; transform: none; }
+  .paper .sign { text-align: right; color: #8b1a2f; font-weight: 700; margin-top: .8rem; }
+  .paper .btn { margin-top: 1rem; width: 100%; opacity: 0; transition: opacity .6s ease; }
+  .paper .btn.on { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .paper, .paper p, .caption, .veil, .start { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="c" aria-hidden="true"></canvas>
+<h2 class="title" id="title">Ila ukhti, min umm thanya</h2>
+<p class="caption" id="caption" aria-live="polite"></p>
+
+<div class="start" id="start">
+  <h1>Aku shi ilich</h1>
+  <p>Dagg 3ala el-zir w istanni shwaya</p>
+  <button class="btn" id="go">Ibdi</button>
+</div>
+
+<button class="btn ghost replay" id="replay">A3id marra thanya</button>
+
+<div class="veil" id="veil" role="dialog" aria-modal="true" aria-label="Rasala">
+  <article class="paper" id="paper">
+    <h2>Rasala ila ukhti el-3azeeza</h2>
+    <div id="lines">
+      <p>Shlonich ya ukhti w habibti?</p>
+      <p>Aku cham kilma ariid aguulha ilich min galbi:</p>
+      <p>Inti 7elwa, ghalya, w galbich abyad mithl el-thalij.</p>
+      <p>Mu chidh ma da tfakkirin, inti a7la bkathir.</p>
+      <p>La tz3alin w la tigsin 3ala nafsich.</p>
+      <p>Law kunna ikhwa b el-3iraq, chan kil yom nishrab chai w nidh7ak sawa 3ala ay shi.</p>
+      <p>Ana wiyyaich dayman, bil fara7 w bil ze3al.</p>
+      <p>Ahebich hwaya ya 3umri, w inti ukhti min umm thanya.</p>
+      <p class="sign">Ukhtich, min galbi</p>
+    </div>
+    <button class="btn" id="close">Sakkir el-risala</button>
+  </article>
+</div>
+
+<script>
+(function () {
+  var cv = document.getElementById('c');
+  var ctx = cv.getContext('2d');
+  var cap = document.getElementById('caption');
+  var veil = document.getElementById('veil');
+  var startEl = document.getElementById('start');
+  var replayBtn = document.getElementById('replay');
+  var closeBtn = document.getElementById('close');
+  var lines = Array.prototype.slice.call(document.querySelectorAll('#lines p'));
+
+  var captions = [
+    "Shlonich ya ukhti w habibti...",
+    "Inti a7la shi bhayati",
+    "Galbich abyad w wijhich nour",
+    "Ahebich hwaya, ya roohi",
+    "Istanni... aku rasala ilich"
+  ];
+  var N = 320, DURATION = 9000;
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var pts = [], drawn = 0, raf = 0, timers = [];
+  var W, H, S, cx, cy;
+
+  function build() {
+    pts = [];
+    for (var i = 0; i < N; i++) {
+      var a = 2 * Math.PI * i / N;
+      var x = 16 * Math.pow(Math.sin(a), 3);
+      var y = 13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a);
+      var L = 0.15 + Math.random() * 0.35;
+      pts.push({ x: x, y: y, xi: x * (1 - L), yi: y * (1 - L) });
+    }
+  }
+
+  function resize() {
+    var dpr = window.devicePixelRatio || 1;
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineCap = 'round';
+    S = Math.min(W * 0.8 / 32, H * 0.5 / 30);
+    cx = W / 2; cy = H * 0.47 + S * 2.5;
+    ctx.lineWidth = Math.max(1.4, S * 0.1);
+    for (var i = 0; i < drawn; i++) drawPoint(pts[i]);
+  }
+
+  function drawPoint(p) {
+    for (var j = 0; j < 10; j++) {
+      var f = j / 10;
+      ctx.strokeStyle = 'rgb(' + ((255 * (1 - 0.6 * f)) | 0) + ',' + ((255 * 0.7 * (1 - f)) | 0) + ',' + ((255 * 0.8 * (1 - f)) | 0) + ')';
+      ctx.beginPath();
+      ctx.moveTo(cx + (p.x + (p.xi - p.x) * f) * S, cy - (p.y + (p.yi - p.y) * f) * S);
+      ctx.lineTo(cx + (p.x + (p.xi - p.x) * (f + 0.1)) * S, cy - (p.y + (p.yi - p.y) * (f + 0.1)) * S);
+      ctx.stroke();
+    }
+  }
+
+  var lastCap = -1;
+  function setCaption(k) {
+    if (k === lastCap) return;
+    lastCap = k;
+    cap.classList.remove('show');
+    setTimeout(function () {
+      cap.textContent = captions[k];
+      cap.classList.add('show');
+    }, reduced ? 0 : 450);
+  }
+
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+
+  function openLetter() {
+    veil.classList.add('open');
+    lines.forEach(function (p, i) { later(function () { p.classList.add('on'); }, 700 + i * 900); });
+    later(function () { closeBtn.classList.add('on'); }, 700 + lines.length * 900);
+  }
+
+  function run() {
+    timers.forEach(clearTimeout); timers = [];
+    cancelAnimationFrame(raf);
+    veil.classList.remove('open');
+    lines.forEach(function (p) { p.classList.remove('on'); });
+    closeBtn.classList.remove('on');
+    replayBtn.classList.remove('show');
+    cap.classList.remove('show'); lastCap = -1;
+    drawn = 0; build(); resize();
+    ctx.clearRect(0, 0, W, H);
+
+    if (reduced) {
+      for (var i = 0; i < N; i++) drawPoint(pts[i]);
+      drawn = N; setCaption(4);
+      later(openLetter, 600);
+      return;
+    }
+
+    var t0 = performance.now();
+    function frame(now) {
+      var target = Math.min(N, Math.floor((now - t0) / DURATION * N));
+      while (drawn < target) { drawPoint(pts[drawn]); drawn++; }
+      setCaption(Math.min(4, Math.floor(drawn / 64)));
+      if (drawn < N) { raf = requestAnimationFrame(frame); }
+      else { later(openLetter, 900); }
+    }
+    raf = requestAnimationFrame(frame);
+  }
+
+  document.getElementById('go').addEventListener('click', function () {
+    startEl.classList.add('gone');
+    run();
+  });
+  closeBtn.addEventListener('click', function () {
+    veil.classList.remove('open');
+    replayBtn.classList.add('show');
+  });
+  replayBtn.addEventListener('click', run);
+  window.addEventListener('resize', resize);
+
+  build(); resize();
+})();
+</script>
+</body>
+</html>
